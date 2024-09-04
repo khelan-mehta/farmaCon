@@ -43,7 +43,8 @@ export class CreateRetailerDto {
   readonly password: string;
   readonly token: string;
   readonly isSuspended: boolean;
+  readonly actType: string;  
   readonly address: Address; 
-  readonly email: string;  
-  readonly outstandingBalance? : number;
+  readonly email: string;   
+  readonly outstandingBalance? : number; 
 }
