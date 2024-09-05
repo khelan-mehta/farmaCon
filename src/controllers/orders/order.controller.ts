@@ -22,6 +22,7 @@ export class OrderController {
   gmService: any;
     constructor(
         @InjectModel('Order') private readonly orderModel: Model<any>,
+        @InjectModel('Product') private readonly productModel: Model<any>,
         private readonly uploadService: UploadService,
         private readonly logger: LoggerService,
         private readonly retailerService: RetailerService,
@@ -71,103 +72,6 @@ private extractBase64Data(base64String: string): { mimeType: string, base64Data:
   }
 }
 
-// @Post('')
-// async createOrder(
-//   @Body() body: CreateOrderDto,
-//   @Res() res: Response,
-// ): Promise<Response> {
-//   try {
-//     const { imgUrl, audioFileUrl, designId, createdBy, ...orderDetails } = body;
-
-//     if (!designId) {
-//       throw new BadRequestException('Design code not provided.');
-//     }
-
-//     const designCodeDoc = await this.designCodeModel.findOne({ designId }).exec();
-
-//     if (!designCodeDoc) {
-//       throw new NotFoundException('Design code not found.');
-//     }
-
-//     const designCodePrice = designCodeDoc.designCodePrice;
-
-//     // Upload images to S3
-//     const imageFolder = 'orders/images';
-//     const imageUploadPromises = imgUrl.map(async (imgData, index) => {
-//       try {
-//         const { mimeType, base64Data } = this.extractBase64Data(imgData);
-//         const extension = mimeType.split('/')[1]; // Get the file extension
-//         const buffer = Buffer.from(base64Data, 'base64');
-//         const file: Express.Multer.File = {
-//           buffer,
-//           originalname: `image_${index}.${extension}`,
-//           mimetype: mimeType,
-//           size: buffer.length,
-//           encoding: '7bit',
-//         } as Express.Multer.File;
-//         return await this.uploadService.uploadFile(file, imageFolder);
-//       } catch (error) {
-//         console.error(`Error processing image ${index}: ${error.message}`);
-//         throw new BadRequestException('Invalid image base64 string');
-//       }
-//     });
-
-//     const imageFileUrls = await Promise.all(imageUploadPromises);
-//     const imgUrls = imageFileUrls.map(file => file.url);
-
-//     // Upload audio file to S3
-//     let audioUrl: string | null = null;
-//     if (audioFileUrl) {
-//       try {
-//         const { mimeType, base64Data } = this.extractBase64Data(audioFileUrl);
-//         const extension = mimeType.split('/')[1]; // Get the file extension
-//         const buffer = Buffer.from(base64Data, 'base64');
-//         const audioFile: Express.Multer.File = {
-//           buffer,
-//           originalname: `audio.${extension}`,
-//           mimetype: mimeType,
-//           size: buffer.length,
-//           encoding: '7bit',
-//         } as Express.Multer.File;
-//         const uploadedAudio = await this.uploadService.uploadFile(audioFile, 'orders/audio');
-//         audioUrl = uploadedAudio.url;
-//       } catch (error) {
-//         console.error(`Error processing audio file: ${error.message}`);
-//         throw new BadRequestException('Invalid audio base64 string');
-//       }
-//     }
-
-//     // Create an order with the uploaded image and audio URLs and designCodePrice
-//     const order = new this.orderModel({
-//       ...orderDetails,
-//       imgUrl: imgUrls,
-//       audioFileUrl: audioUrl,
-//       price: designCodePrice,
-//       createdBy: new Types.ObjectId(createdBy), // Ensure createdBy is converted to ObjectId
-//       designId,
-//     });
-
-//     console.log('Order Data to be Saved:', order);
-
-//     const result = await order.save();
-
-//     // Update Retailer's outstandingBalance
-//     const retailer = await this.retailerService.findOne(createdBy.toString());
-
-//     if (!retailer) {
-//       throw new BadRequestException('Retailer not found.');
-//     }
-
-//     // Increment the outstandingBalance by designCodePrice
-//     retailer.outstandingBalance = (retailer.outstandingBalance || 0) + designCodePrice;
-//     await retailer.save();
-
-//     return res.status(201).json(result);
-//   } catch (error) {
-//     console.error('Error creating order:', error);
-//     return res.status(500).json({ message: 'Internal server error' });
-//   }
-// }
 
 
 @Get('recent')
@@ -303,7 +207,7 @@ async getOrders(
   @Query() query: { page?: number; pageSize?: number },
 ): Promise<Response> {
   try {
-    const { page = 1, pageSize = 10 } = query; // Provide default values for page and pageSize
+    const { page = 1, pageSize = 20 } = query; // Provide default values for page and pageSize
     console.log(`Fetching non-deleted orders, page: ${page}, pageSize: ${pageSize}`);
 
     const { data, total } = await this.paginationService.paginate(
@@ -332,7 +236,7 @@ async getOrders(
   async getAllOrders(@Res() res: Response): Promise<Response> {
       try {
           this.logger.log('Fetching all orders');
-          const orders = await this.orderModel.find();
+          const orders = await this.productModel.find();
           return res.status(200).json(orders);
       } catch (error) {
           this.logger.error('Error fetching all orders:', error);
