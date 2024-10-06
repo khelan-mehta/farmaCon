@@ -23,6 +23,7 @@ import { RetailerService } from './services/retailer/retailer.service';
 import { WorkerModule } from './worker.module'; // Import WorkerModule
 import { RetailerModule } from './retailer.module';
 import { WorkerModel } from './database/models/worker.model';
+import { FactModel } from './database/models/fact.model';
 import { DesignCodeModule } from './design-code.module';
 import {
   DesignCodeModel,
@@ -34,6 +35,8 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { TransactionsController } from './controllers/gm/transactions.controller';
 import { TransactionSchema } from './database/schemas/transaction.schema';
 import { VegetableModel } from './database/models/vegetablet.model';
+import { FactsController } from './controllers/facts/facts.controller';
+import { FactService } from './services/facts/fact.service';
 
 @Module({
   imports: [
@@ -49,6 +52,7 @@ import { VegetableModel } from './database/models/vegetablet.model';
       { name: 'DesignCode', schema: DesignCodeSchema },
       { name: 'Transactions', schema: TransactionSchema },
       { name: 'Product', schema: VegetableModel.schema },
+      { name: 'Fact', schema: FactModel.schema },
     ]),
     DesignCodeModule,
     CatalogueModule,
@@ -67,6 +71,7 @@ import { VegetableModel } from './database/models/vegetablet.model';
     GmController,
     AuthController,
     TransactionsController,
+    FactsController,
   ],
   providers: [
     AuthService,
@@ -79,6 +84,7 @@ import { VegetableModel } from './database/models/vegetablet.model';
     RetailerService,
     MailerService,
     JwtAuthGuard,
+    FactService,
   ],
 })
 export class AppModule {}
